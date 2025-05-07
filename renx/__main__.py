@@ -5,7 +5,7 @@ from .scantree import ScanTree
 
 class ScanDir(ScanTree):
     def __init__(self) -> None:
-        self._de_filter = []
+        self._entry_filters = []
         super().__init__()
 
     def add_arguments(self, ap):
@@ -73,7 +73,7 @@ class ScanDir(ScanTree):
         self._subs = _subs
         super().start()
 
-    def dir_entry(self, de):
+    def process_entry(self, de):
         name = de.name
         name2 = name
         parent = dirname(de.path)

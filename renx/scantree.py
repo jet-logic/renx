@@ -121,7 +121,7 @@ class ScanTree(WalkDir, Main):
         argp.add_argument("paths", metavar="PATH", nargs="*")
 
     def start(self):
-        self.walk_roots(self.paths)
+        self.start_walk(self.paths)
 
 
 def globre(pat):
