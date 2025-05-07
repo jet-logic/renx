@@ -46,7 +46,7 @@ class TestUrlsafeRenameEndToEnd(unittest.TestCase):
 
         # Verify output contains expected renames
         expected_transforms = {
-            "My Résumé.pdf": "My_R_sum.pdf",
+            "My Résumé.pdf": "My_Resume.pdf",
             "Vacation Photos 2023.jpg": "Vacation_Photos_2023.jpg",
             "Price List (v2).xlsx": "Price_List_v2.xlsx",
             "config~backup.json": "config_backup.json",
@@ -76,7 +76,7 @@ class TestUrlsafeRenameEndToEnd(unittest.TestCase):
 
         # Expected filenames after transformation
         expected_files = [
-            "My_R_sum.pdf",
+            "My_Resume.pdf",
             "Vacation_Photos_2023.jpg",
             "Price_List_v2.xlsx",
             "config_backup.json",
@@ -107,7 +107,7 @@ class TestUrlsafeRenameEndToEnd(unittest.TestCase):
 
         # Verify combined transformation
         expected_files = [
-            "my_r_sum.pdf",
+            "my_resume.pdf",
             "vacation_photos_2023.jpg",
             "price_list_v2.xlsx",
             "config_backup.json",

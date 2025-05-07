@@ -14,7 +14,7 @@ def text_to_ascii(text):
     )
 
 
-class ScanDir(ScanTree):
+class App(ScanTree):
     def __init__(self) -> None:
         self._entry_filters = []
         super().__init__()
@@ -33,7 +33,7 @@ class ScanDir(ScanTree):
         if not ap.description:
             ap.description = "Renames files matching re substitution pattern"
 
-        super(ScanDir, self).add_arguments(ap)
+        super(App, self).add_arguments(ap)
 
     def start(self):
         from re import compile as regex
@@ -54,6 +54,7 @@ class ScanDir(ScanTree):
 
             def slugify(value):
                 value = str(value)
+                value = text_to_ascii(value)
                 value = re.sub(r"[^a-zA-Z0-9_.+-]+", "_", value)
                 return value
 
@@ -119,4 +120,4 @@ class ScanDir(ScanTree):
                 print(f'REN: {name1!r} -> {name2!r} {dry_run and "?" or "!"} @{parent}')
 
 
-(__name__ == "__main__") and ScanDir().main()
+(__name__ == "__main__") and App().main()
