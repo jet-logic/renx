@@ -46,11 +46,13 @@ class ScanDir(ScanTree):
 
             def clean(value):
                 value = str(value)
-                return re.sub(r"[_-]+", "_", value).strip("_")
+                value = re.sub(r"\-+", "-", value).strip("-")
+                value = re.sub(r"_+", "_", value).strip("_")
+                return value
 
             def urlsafe(name, parent):
                 s = slugify(name)
-                if s != name:
+                if s != name or re.search(r"[_-]\.", s) or re.search(r"[_-]+", s):
                     assert slugify(s) == s
                     stem, ext = splitext(s)
                     return clean(stem) + ext
@@ -58,38 +60,48 @@ class ScanDir(ScanTree):
 
             _subs.append(urlsafe)
 
+        def _append(rex, rep):
+            # print("REX", rex, rep)
+            _subs.append((lambda name, parent: rex.sub(rep, name)))
+
         for s in self.subs:
             a = s[1:].split(s[0], 3)
             if len(a) < 2:
                 raise RuntimeError("Invalid subtitue pattern `%s'" % s)
-            s = 0
+            f = 0
             if len(a) > 2:
                 for x in a[2]:
-                    s |= getattr(re, x.upper())
-            # _subs.append((regex(a[0], s), a[1]))
-            rex = regex(a[0], s)
+                    u = x.upper()
+                    if u in "AILUMSXT":
+                        f |= getattr(re, u)
+                    else:
+                        raise RuntimeError(f"Invalid re flag {x!r}")
+            rex = regex(a[0], f)
             rep = a[1]
-            _subs.append((lambda name, parent: rex.sub(rep, name)))
+            _append(rex, rep)
+
         self._subs = _subs
         super().start()
 
     def process_entry(self, de):
-        name = de.name
-        name2 = name
+
+        name1 = de.name
+        name2 = name1
         parent = dirname(de.path)
         dry_run = self.dry_run
 
         for fn in self._subs:
             v = fn(name2, parent)
+            # print("PE_subs", de.path, name2, v)
             if v:
                 name2 = v
-
-        if name2 and (name != name2):
+        # print("PE", de.path, [name1, name2])
+        if name2 and (name1 != name2):
             try:
-                path = join(parent, name)
+                path = join(parent, name1)
                 dry_run is False and rename(path, join(parent, name2))
             finally:
-                print(f'REN: {name!r} -> {name2!r} {dry_run and "?" or "!"} @{parent}')
+                print(f'REN: {name1!r} -> {name2!r} {dry_run and "?" or "!"} @{parent}')
 
 
 (__name__ == "__main__") and ScanDir().main()

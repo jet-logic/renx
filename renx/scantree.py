@@ -5,12 +5,13 @@ from .walkdir import WalkDir
 class ScanTree(WalkDir, Main):
 
     def add_arguments(self, argp):
-        argp.add_argument(
+        group = argp.add_argument_group("Traversal")
+        group.add_argument(
             "--bottom-up",
             action="store_true",
             help="Process each directory's contents before the directory itself",
         )
-        argp.add_argument(
+        group.add_argument(
             "-P",
             dest="follow_symlinks",
             const=0,
@@ -18,7 +19,7 @@ class ScanTree(WalkDir, Main):
             help="Never follow symbolic links. This is the default behaviour",
             action="store_const",
         )
-        argp.add_argument(
+        group.add_argument(
             "-H",
             dest="follow_symlinks",
             const=0,
@@ -26,7 +27,7 @@ class ScanTree(WalkDir, Main):
             help="Do not follow symbolic links, except while processing  the  command line arguments",
             action="store_const",
         )
-        argp.add_argument(
+        group.add_argument(
             "-L",
             dest="follow_symlinks",
             const=1,
@@ -80,28 +81,11 @@ class ScanTree(WalkDir, Main):
                     name_re.append(re_from_glob(values))
                     # setattr(namespace, self.dest, values)
 
-            class REAction(GlobAction):
-                def __call__(self, parser, namespace, values, option_string=None):
-                    name_re.append(regex(values))
-
-            argp.add_argument(
-                "--name",
-                metavar="GLOB",
-                action=GlobAction,
-                help="file must match GLOB",
-            )
-            argp.add_argument(
-                "--name-re",
-                metavar="REGEX",
-                action=REAction,
-                help="file must match REGEX",
-            )
-
         if self.excludes is not None or self.includes is not None:
             from fnmatch import translate
             from re import compile as regex
 
-            argp.add_argument(
+            group.add_argument(
                 "--exclude",
                 metavar="GLOB",
                 action="append",
@@ -109,7 +93,7 @@ class ScanTree(WalkDir, Main):
                 dest="excludes",
                 help="exclude matching GLOB",
             )
-            argp.add_argument(
+            group.add_argument(
                 "--include",
                 metavar="GLOB",
                 action="append",
