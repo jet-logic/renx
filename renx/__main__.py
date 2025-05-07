@@ -1,6 +1,17 @@
 from os.path import dirname, join
 from os import rename
 from .scantree import ScanTree
+import unicodedata
+
+
+def text_to_ascii(text):
+    """
+    Converts a Unicode string to its closest ASCII equivalent by removing
+    accent marks and other non-ASCII characters.
+    """
+    return "".join(
+        c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn"
+    )
 
 
 class ScanDir(ScanTree):
@@ -31,9 +42,11 @@ class ScanDir(ScanTree):
         _subs = []
 
         if self.lower:
+            assert not self.upper, f"lower and upper conflict"
             _subs.append((lambda name, parent: name.lower()))
 
         if self.upper:
+            assert not self.lower, f"lower and upper conflict"
             _subs.append((lambda name, parent: name.upper()))
 
         if self.urlsafe:
@@ -76,6 +89,8 @@ class ScanDir(ScanTree):
                         f |= getattr(re, u)
                     else:
                         raise RuntimeError(f"Invalid re flag {x!r}")
+            if not a[0]:
+                raise RuntimeError(f"Empty search pattern {s!r}'")
             rex = regex(a[0], f)
             rep = a[1]
             _append(rex, rep)

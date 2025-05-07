@@ -1,0 +1,86 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "renx"
+version = "0.0.1"
+description = "Advanced file renaming tool with regex and case transformation support"
+readme = "README.md"
+authors = [
+    {name = "JetLogic"},
+]
+license = {text = "MIT"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Operating System :: OS Independent",
+    "Environment :: Console",
+    "Topic :: Utilities",
+]
+keywords = ["rename", "files", "regex", "cli", "batch"]
+requires-python = ">=3.7"
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/jet-logic/renx"
+Documentation = "https://github.com/jet-logic/renx#readme"
+BugTracker = "https://github.com/jet-logic/renx/issues"
+Changelog = "https://github.com/jet-logic/renx/releases"
+
+[project.scripts]
+renx = "renx.__main__:ScanDir.main"
+
+[project.optional-dependencies]
+test = [
+    "pytest>=6.0",
+    "pytest-cov>=2.0",
+    "pytest-mock>=3.0",
+]
+dev = [
+    "black>=22.0",
+    "flake8>=4.0",
+    "mypy>=0.900",
+    "isort>=5.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+addopts = "--cov=renx --cov-report=term-missing"
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+include = '\.pyi?$'
+exclude = '''
+/(
+    \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | _build
+  | buck-out
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+line_length = 88
+known_first_party = ["renx"]
