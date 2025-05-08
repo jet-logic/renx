@@ -11,27 +11,25 @@ If you find this project helpful, consider supporting me:
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B01E8SY7)
 
-## Features
+## Features ✨
 
-- Recursive directory traversal (top-down or bottom-up)
-- Multiple renaming transformations:
-  - Case conversion (lowercase/uppercase)
-  - URL-safe filename generation
-  - Regular expression substitutions
-- Flexible filtering:
-  - Include/exclude by glob patterns or regex
-  - Maximum depth control
-- Safety features:
-  - Dry-run mode by default
-  - Preview changes before executing
+- **Pattern-based renaming** 🧩 - Use regex substitutions to transform filenames
+- **Smart case conversion** 🔠 - Convert to lowercase (`--lower`) or uppercase (`--upper`)
+- **URL-safe names** 🌐 - Clean filenames for web use (`--urlsafe`)
+- **Precise file selection** 🎯:
+  - Include/exclude files with `--includes`/`--excludes`
+  - Control traversal depth with `--max-depth`
+- **Safe operations** 🛡️:
+  - Dry-run mode by default (`--act` to execute) preview changes before executing
+  - Bottom-up or top-down processing
 
-## Installation
+## 📦 Installation
 
 ```bash
 pip install renx
 ```
 
-## Usage
+## 🚀 Usage
 
 ```bash
 python -m renx [OPTIONS] [PATHS...]
@@ -62,36 +60,100 @@ python -m renx [OPTIONS] [PATHS...]
    python -m renx --urlsafe /path/to/files
    ```
 
-### Regex Substitutions
+## Regex Substitutions Format
 
-The `--subs` (`-s`) option supports Perl-style regex substitutions:
+The substitution pattern uses this format:
 
-Format: `/DELIMITER/PATTERN/DELIMITER/REPLACEMENT/DELIMITER/FLAGS`
+```
+❗REGEX❗REPLACEMENT❗FLAGS
+```
 
-Examples:
+Where:
 
-1. Replace spaces with underscores:
+1. The first character (❗) after `-s` or `--subs` acts as the delimiter
+2. The pattern is split into parts by this delimiter
 
-   ```bash
-   python -m renx -s '/ /_/g' /path/to/files
-   ```
+## Examples
 
-2. Remove special characters:
+### Simple substitution
 
-   ```bash
-   python -m renx -s '/[^a-zA-Z0-9.]//' /path/to/files
-   ```
+```
+-s '/old/new/'
+```
 
-3. Add prefix to numbered files:
+- Replaces first occurrence of "old" with "new" in each filename
 
-   ```bash
-   python -m renx -s '/(\d+)/image_$1/' *.jpg
-   ```
+### 3. Using different delimiters
 
-4. Case-insensitive extension fix:
-   ```bash
-   python -m renx -s '/\.jpe?g$/.jpg/i' *
-   ```
+```
+-s '|old|new|'
+```
+
+- Uses `|` as delimiter instead of `/`
+
+### 4. Case-insensitive substitution
+
+```
+-s ':old:new:i'
+```
+
+- Replaces "old", "Old", "OLD", etc. with "new"
+
+### 5. Complex patterns
+
+```
+-s '/\d+/_/'
+```
+
+- Replaces one or more digits with an underscore
+
+## Supported Flags
+
+The tool supports these regex flags (see Python's `re` module for complete reference):
+
+| Flag | Meaning                        |
+| ---- | ------------------------------ |
+| `i`  | Case-insensitive matching      |
+| `m`  | Multi-line matching            |
+| `s`  | Dot matches all (including \n) |
+| `x`  | Verbose (ignore whitespace)    |
+
+For example, with `-s '/foo/bar/i'`:
+
+1. Delimiter = `/`
+2. Regex = `foo`
+3. Replacement = `bar`
+4. Flags = `i` (case-insensitive)
+
+## Important Notes
+
+- The delimiter can be any character (but must not appear unescaped in the pattern)
+- The tool compiles the regex with the specified flags before applying it
+
+## Practical Examples
+
+- **Replace spaces with underscores**:
+
+  ```
+  renx -s '/ /_/' /path/to/files
+  ```
+
+- **Remove special characters**:
+
+  ```
+  renx -s '/[^a-zA-Z0-9.]//' /path/to/files
+  ```
+
+- **Add prefix to numbered files**:
+
+  ```
+  renx -s '/(\d+)/image_\1/' *.jpg
+  ```
+
+- **Fix inconsistent extensions (case-insensitive)**:
+  ```
+  renx -s '/\.jpe?g$/.jpg/i' *
+  ```
 
 ### Filtering Options
 
