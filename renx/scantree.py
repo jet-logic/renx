@@ -56,33 +56,8 @@ class ScanTree(WalkDir, Main):
                     dest="dry_run",
                     help="test run only",
                 )
-        try:
-            name_re = self.name_re
-        except AttributeError:
-            self.name_re = None
-        else:
-            from argparse import Action
-            from re import compile as regex, escape, I
-
-            def re_from_glob(s):
-                s = escape(s)
-                s = s.replace(r"\*", ".*")
-                s = s.replace(r"\?", ".")
-                return regex(s, I)
-
-            class GlobAction(Action):
-                def __init__(self, option_strings, dest, nargs=None, **kwargs):
-                    if not (nargs is None or nargs == 1):
-                        raise ValueError("nargs not allowed")
-                    super().__init__(option_strings, dest, **kwargs)
-
-                def __call__(self, parser, namespace, values, option_string=None):
-                    # print("name_re %r %r %r" % (namespace, values, option_string))
-                    name_re.append(re_from_glob(values))
-                    # setattr(namespace, self.dest, values)
 
         if self.excludes is not None or self.includes is not None:
-            from fnmatch import translate
             from re import compile as regex
 
             group.add_argument(

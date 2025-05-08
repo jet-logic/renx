@@ -4,7 +4,7 @@ from .scantree import ScanTree
 import unicodedata
 
 
-def text_to_ascii(text):
+def text_to_ascii(text: str):
     """
     Converts a Unicode string to its closest ASCII equivalent by removing
     accent marks and other non-ASCII characters.
@@ -19,21 +19,23 @@ class App(ScanTree):
         self._entry_filters = []
         super().__init__()
 
-    def add_arguments(self, ap):
+    def add_arguments(self, argp):
         self.dry_run = True
         self.bottom_up = True
         self.excludes = []
         self.includes = []
-        ap.add_argument("--subs", "-s", action="append", default=[], help="subs regex")
-        ap.add_argument("--lower", action="store_true", help="to lower case")
-        ap.add_argument("--upper", action="store_true", help="to upper case")
-        ap.add_argument(
+        argp.add_argument(
+            "--subs", "-s", action="append", default=[], help="subs regex"
+        )
+        argp.add_argument("--lower", action="store_true", help="to lower case")
+        argp.add_argument("--upper", action="store_true", help="to upper case")
+        argp.add_argument(
             "--urlsafe", action="store_true", help="only urlsafe characters"
         )
-        if not ap.description:
-            ap.description = "Renames files matching re substitution pattern"
+        if not argp.description:
+            argp.description = "Renames files matching re substitution pattern"
 
-        super(App, self).add_arguments(ap)
+        super(App, self).add_arguments(argp)
 
     def start(self):
         from re import compile as regex

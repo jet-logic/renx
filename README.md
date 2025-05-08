@@ -1,8 +1,15 @@
 # renx - Advanced File Renaming Tool
 
 [![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![PyPI version fury.io](https://badge.fury.io/py/renx.svg)](https://pypi.python.org/pypi/renx/)
 
 `renx` is a powerful command-line utility for batch renaming files and directories with advanced pattern matching and transformation capabilities.
+
+## ☕ Support
+
+If you find this project helpful, consider supporting me:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B01E8SY7)
 
 ## Features
 
