@@ -35,20 +35,15 @@ class ScanTree(WalkDir, Main):
             help="Follow symbolic links",
             action="store_const",
         )
-        argp.add_argument(
-            "--verbose",
-            "-v",
-            action="store_true",
-        )
+        group.add_argument("--max-depth", action="store", type=int)
+
         try:
             b = self.dry_run
         except AttributeError:
             pass
         else:
             if b:
-                argp.add_argument(
-                    "--act", action="store_false", dest="dry_run", help="not a test run"
-                )
+                argp.add_argument("--act", action="store_false", dest="dry_run", help="not a test run")
             else:
                 argp.add_argument(
                     "--dry-run",
@@ -151,9 +146,7 @@ def globre(pat):
                             del chunks[k]
                     # Escape backslashes and hyphens for set difference (--).
                     # Hyphens that create ranges shouldn't be escaped.
-                    stuff = "-".join(
-                        s.replace("\\", r"\\").replace("-", r"\-") for s in chunks
-                    )
+                    stuff = "-".join(s.replace("\\", r"\\").replace("-", r"\-") for s in chunks)
                 # Escape set operations (&&, ~~ and ||).
                 stuff = sub(r"([&~|])", r"\\\1", stuff)
                 i = j + 1

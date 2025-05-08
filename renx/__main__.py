@@ -9,9 +9,22 @@ def text_to_ascii(text: str):
     Converts a Unicode string to its closest ASCII equivalent by removing
     accent marks and other non-ASCII characters.
     """
-    return "".join(
-        c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn"
-    )
+    return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
+
+
+def split_subs(s: str):
+    a = s[1:].split(s[0], 3)
+    if len(a) > 1:
+        search = a[0]
+        replace = a[1]
+        if not search:
+            raise RuntimeError(f"Empty search pattern {s!r}")
+        if len(a) > 2:
+            flags = a[2]
+            if flags:
+                search = f"(?{flags}){search}"
+        return search, replace, {}
+    raise RuntimeError(f"Invalid pattern  {s!r}")
 
 
 class App(ScanTree):
@@ -24,14 +37,10 @@ class App(ScanTree):
         self.bottom_up = True
         self.excludes = []
         self.includes = []
-        argp.add_argument(
-            "--subs", "-s", action="append", default=[], help="subs regex"
-        )
+        argp.add_argument("--subs", "-s", action="append", default=[], help="subs regex")
         argp.add_argument("--lower", action="store_true", help="to lower case")
         argp.add_argument("--upper", action="store_true", help="to upper case")
-        argp.add_argument(
-            "--urlsafe", action="store_true", help="only urlsafe characters"
-        )
+        argp.add_argument("--urlsafe", action="store_true", help="only urlsafe characters")
         if not argp.description:
             argp.description = "Renames files matching re substitution pattern"
 
@@ -76,27 +85,14 @@ class App(ScanTree):
 
             _subs.append(urlsafe)
 
-        def _append(rex, rep):
+        def _append(rex, rep, extra):
             # print("REX", rex, rep)
             _subs.append((lambda name, parent: rex.sub(rep, name)))
 
         for s in self.subs:
-            a = s[1:].split(s[0], 3)
-            if len(a) < 2:
-                raise RuntimeError("Invalid subtitue pattern `%s'" % s)
-            f = 0
-            if len(a) > 2:
-                for x in a[2]:
-                    u = x.upper()
-                    if u in "AILUMSXT":
-                        f |= getattr(re, u)
-                    else:
-                        raise RuntimeError(f"Invalid re flag {x!r}")
-            if not a[0]:
-                raise RuntimeError(f"Empty search pattern {s!r}'")
-            rex = regex(a[0], f)
-            rep = a[1]
-            _append(rex, rep)
+            search, replace, extra = split_subs(s)
+            rex = regex(search)
+            _append(rex, replace, extra)
 
         self._subs = _subs
         super().start()

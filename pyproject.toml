@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "renx"
-version = "0.0.3"
+version = "0.0.4"
 description = "Advanced file renaming tool with regex and case transformation support"
 readme = "README.md"
 authors = [
-    {name = "JetLogic"},
+    {name = "Jet-Logic"},
 ]
 license-files = ["LICEN[CS]E*"]
 classifiers = [
