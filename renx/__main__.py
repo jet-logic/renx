@@ -17,13 +17,19 @@ def split_subs(s: str):
     if len(a) > 1:
         search = a[0]
         replace = a[1]
+        extra = {}
         if not search:
             raise RuntimeError(f"Empty search pattern {s!r}")
         if len(a) > 2:
-            flags = a[2]
+            flags = None
+            for x in a[2:]:
+                if x in ["upper", "lower", "title", "swapcase", "expandtabs", "casefold", "capitalize", "ext", "stem"]:
+                    extra[x] = True
+                else:
+                    flags = x
             if flags:
                 search = f"(?{flags}){search}"
-        return search, replace, {}
+        return search, replace, extra
     raise RuntimeError(f"Invalid pattern  {s!r}")
 
 
@@ -60,8 +66,9 @@ class App(ScanTree):
             assert not self.lower, f"lower and upper conflict"
             _subs.append((lambda name, parent: name.upper()))
 
+        from os.path import splitext
+
         if self.urlsafe:
-            from os.path import splitext
 
             def slugify(value):
                 value = str(value)
@@ -86,8 +93,41 @@ class App(ScanTree):
             _subs.append(urlsafe)
 
         def _append(rex, rep, extra):
+            if extra:
+
+                def fn(name: str, parent):
+                    if extra.get("stem"):
+                        S, x = splitext(name)
+                        F = lambda r: r + x
+                    elif extra.get("ext"):
+                        x, S = splitext(name)
+                        F = lambda r: x + r
+                    else:
+                        S = name
+                        F = lambda r: r
+                    if extra.get("lower"):
+                        R = lambda m: m.group(0).lower()
+                    elif extra.get("upper"):
+                        R = lambda m: m.group(0).upper()
+                    elif extra.get("title"):
+                        R = lambda m: m.group(0).title()
+                    elif extra.get("swapcase"):
+                        R = lambda m: m.group(0).swapcase()
+                    elif extra.get("casefold"):
+                        R = lambda m: m.group(0).casefold()
+                    elif extra.get("capitalize"):
+                        R = lambda m: m.group(0).capitalize()
+                    else:
+                        R = rep
+                    return F(rex.sub(R, S))
+
+            else:
+
+                def fn(name, parent):
+                    return rex.sub(rep, name)
+
             # print("REX", rex, rep)
-            _subs.append((lambda name, parent: rex.sub(rep, name)))
+            _subs.append(fn)
 
         for s in self.subs:
             search, replace, extra = split_subs(s)
