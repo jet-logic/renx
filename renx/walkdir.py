@@ -76,7 +76,7 @@ class WalkDir:
             yield from scandir(src)
         except FileNotFoundError:
             pass
-        except:
+        except Exception:
             if self.carry_on:
                 pass
             else:
