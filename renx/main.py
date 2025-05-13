@@ -15,9 +15,7 @@ class Argument:
         self.args = args
         self.kwargs = kwargs
 
-    def _add(
-        self, name: str, type_: type, argp: "argparse.ArgumentParser", that: "Any"
-    ) -> None:
+    def _add(self, name: str, type_: type, argp: "argparse.ArgumentParser", that: "Any") -> None:
         """Add argument to parser."""
         args = []
         kwargs = {**self.kwargs}
@@ -26,15 +24,12 @@ class Argument:
         action = kwargs.get("action")
         const = kwargs.get("const")
         default = kwargs.get("default", INVALID)
+        # kind = type(default)
         # print(name, type_, that, "_add", action, flag_arg)
 
         if action is None:
             if const is not None:
-                kwargs["action"] = (
-                    "append_const"
-                    if type_ and issubclass(type_, list)
-                    else "store_const"
-                )
+                kwargs["action"] = "append_const" if type_ and issubclass(type_, list) else "store_const"
             elif type_ is None:
                 kwargs["action"] = "store"
             elif issubclass(type_, bool):
@@ -50,7 +45,7 @@ class Argument:
                 else:
                     assert default is INVALID or default is False
                     kwargs["action"] = "store_true"
-            elif issubclass(type_, list):
+            elif issubclass(type_, list) or isinstance(default, list):
                 if "nargs" not in kwargs:
                     kwargs["action"] = "append"
                 if "default" not in kwargs:
@@ -76,9 +71,7 @@ class Argument:
         else:
 
             def add_args(x: str) -> None:
-                args.append(
-                    x if x.startswith("-") else (f"--{x}" if len(x) > 1 else f"-{x}")
-                )
+                args.append(x if x.startswith("-") else (f"--{x}" if len(x) > 1 else f"-{x}"))
 
             for x in self.args:
                 if " " in x or "\t" in x:
@@ -128,9 +121,7 @@ class Main:
         try:
             m = super().__getattr__
         except AttributeError:
-            raise AttributeError(
-                f"{self.__class__.__name__} has no attribute {name}"
-            ) from None
+            raise AttributeError(f"{self.__class__.__name__} has no attribute {name}") from None
         else:
             return m(name)
 
@@ -165,9 +156,7 @@ class Main:
         for k, v, t in _arg_fields(self):
             v._add(k, t, argp, self)
 
-    def parse_arguments(
-        self, argp: "argparse.ArgumentParser", args: "Sequence[str]|None"
-    ) -> None:
+    def parse_arguments(self, argp: "argparse.ArgumentParser", args: "Sequence[str]|None") -> None:
         """Parse command line arguments."""
         sp = None
         for s, k in self.sub_args():
