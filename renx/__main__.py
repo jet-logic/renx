@@ -1,15 +1,39 @@
-from os.path import dirname, join
+import unicodedata, re
 from os import rename
+from os.path import dirname, join
+from os.path import splitext
 from .scantree import ScanTree
-import unicodedata
 
 
-def text_to_ascii(text: str):
+def asciify(text: str):
     """
     Converts a Unicode string to its closest ASCII equivalent by removing
     accent marks and other non-ASCII characters.
     """
     return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
+
+
+def slugify(value):
+    value = str(value)
+    value = asciify(value)
+    value = re.sub(r"[^a-zA-Z0-9_.+-]+", "_", value)
+    return value
+
+
+def clean(value):
+    value = str(value)
+    value = re.sub(r"\-+", "-", value).strip("-")
+    value = re.sub(r"_+", "_", value).strip("_")
+    return value
+
+
+def urlsafe(name, parent=None):
+    s = slugify(name)
+    if s != name or re.search(r"[_-]\.", s) or re.search(r"[_-]+", s):
+        assert slugify(s) == s
+        stem, ext = splitext(s)
+        return clean(stem) + ext
+    return name
 
 
 def split_subs(s: str):
@@ -23,7 +47,22 @@ def split_subs(s: str):
         if len(a) > 2:
             flags = None
             for x in a[2:]:
-                if x in ["upper", "lower", "title", "swapcase", "expandtabs", "casefold", "capitalize", "ext", "stem"]:
+                if x in [
+                    "upper",
+                    "lower",
+                    "title",
+                    "swapcase",
+                    "expandtabs",
+                    "casefold",
+                    "capitalize",
+                    "asciify",
+                    "slugify",
+                    "urlsafe",
+                    "ext",
+                    "stem",
+                ]:
+                    if x not in ["ext", "stem"]:
+                        assert not replace
                     extra[x] = True
                 else:
                     flags = x
@@ -66,30 +105,7 @@ class App(ScanTree):
             assert not self.lower, f"lower and upper conflict"
             _subs.append((lambda name, parent: name.upper()))
 
-        from os.path import splitext
-
         if self.urlsafe:
-
-            def slugify(value):
-                value = str(value)
-                value = text_to_ascii(value)
-                value = re.sub(r"[^a-zA-Z0-9_.+-]+", "_", value)
-                return value
-
-            def clean(value):
-                value = str(value)
-                value = re.sub(r"\-+", "-", value).strip("-")
-                value = re.sub(r"_+", "_", value).strip("_")
-                return value
-
-            def urlsafe(name, parent):
-                s = slugify(name)
-                if s != name or re.search(r"[_-]\.", s) or re.search(r"[_-]+", s):
-                    assert slugify(s) == s
-                    stem, ext = splitext(s)
-                    return clean(stem) + ext
-                return name
-
             _subs.append(urlsafe)
 
         def _append(rex, rep, extra):
@@ -117,6 +133,12 @@ class App(ScanTree):
                         R = lambda m: m.group(0).casefold()
                     elif extra.get("capitalize"):
                         R = lambda m: m.group(0).capitalize()
+                    elif extra.get("asciify"):
+                        R = lambda m: asciify(m.group(0))
+                    elif extra.get("urlsafe"):
+                        R = lambda m: urlsafe(m.group(0))
+                    elif extra.get("slugify"):
+                        R = lambda m: urlsafe(m.group(0))
                     else:
                         R = rep
                     return F(rex.sub(R, S))
@@ -126,12 +148,17 @@ class App(ScanTree):
                 def fn(name, parent):
                     return rex.sub(rep, name)
 
+            fn.regx = rex
+
             # print("REX", rex, rep)
             _subs.append(fn)
 
         for s in self.subs:
             search, replace, extra = split_subs(s)
-            rex = regex(search)
+            try:
+                rex = regex(search)
+            except Exception as e:
+                raise RuntimeError(f"Bad regexp {search!r}: {e}")
             _append(rex, replace, extra)
 
         self._subs = _subs
@@ -147,6 +174,7 @@ class App(ScanTree):
         for fn in self._subs:
             v = fn(name2, parent)
             # print("PE_subs", de.path, name2, v)
+            # print("fn", getattr(fn, "regx", "?"))
             if v:
                 name2 = v
         # print("PE", de.path, [name1, name2])

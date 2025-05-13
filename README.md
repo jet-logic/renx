@@ -14,7 +14,7 @@ If you find this project helpful, consider supporting me:
 ## Features ✨
 
 - **Pattern-based renaming** 🧩 - Use regex substitutions to transform filenames
-- **Smart case conversion** 🔠 - Convert to lowercase (`--lower`) or uppercase (`--upper`)
+- **Case conversion**: lower, upper, title, swapcase, capitalize
 - **URL-safe names** 🌐 - Clean filenames for web use (`--urlsafe`)
 - **Precise file selection** 🎯:
   - Include/exclude files with `--includes`/`--excludes`
@@ -65,7 +65,7 @@ python -m renx [OPTIONS] [PATHS...]
 The substitution pattern uses this format:
 
 ```
-❗REGEX❗REPLACEMENT❗FLAGS
+❗search❗replace❗[flags]❗[flags]❗[flags]
 ```
 
 Where:
@@ -125,6 +125,21 @@ For example, with `-s '/foo/bar/i'`:
 3. Replacement = `bar`
 4. Flags = `i` (case-insensitive)
 
+Special flags:
+
+- `upper`, `lower`, `title`, `swapcase`, `capitalize` - Case transformations
+- `ext` - Apply to extension only
+- `stem` - Apply to filename stem only
+
+Examples:
+
+- `-s '/foo/bar/'` - Replace 'foo' with 'bar'
+- `-s '/\.jpg$/.png/'` - Change .jpg extensions to .png
+- `-s '/^/prefix_/'` - Add prefix to all names
+- `-s '/_/-/g'` - Replace all underscores with hyphens
+- `-s '/.*//upper/'` - Convert entire name to uppercase
+- `-s '/\..*$//lower/ext'` - Convert extension to lowercase
+
 ## Important Notes
 
 - The delimiter can be any character (but must not appear unescaped in the pattern)
@@ -173,3 +188,20 @@ For example, with `-s '/foo/bar/i'`:
    ```bash
    python -m renx --max-depth 2 /path/to/files
    ```
+
+## Multiple substitution
+
+When your downloaded files look like they were named by a cat walking on a keyboard 😉:
+
+```bash
+python -m renx \
+    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE))##ix' \
+    -s '!(1080p|720p|HDRip|x264|x265|BRRip|WEB-DL|BDRip|AAC|DTS)!!i' \
+    -s '!\[(|\w+)\]!\1!' \
+    -s '/[\._-]+/./' \
+    -s '/\.+/ /stem' \
+    -s /.+//ext/lower \
+    .
+# Before: "The.Matrix.[1999].1080p.[YTS.AM].BRRip.x264-[GloDLS].ExTrEmE.mKV"
+# After: "The Matrix 1999.mkv" 🎬✨
+```
