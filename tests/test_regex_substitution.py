@@ -29,13 +29,12 @@ class TestRegexSubstitution(unittest.TestCase):
 
     def run_renx(self, *args):
         """Helper to run renx as subprocess"""
-        result = subprocess.run(
-            ["python", "-m", "renx"] + list(args) + [self.test_dir],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return result.stdout + result.stderr
+        c = ["python", "-m", "renx"] + list(args) + [self.test_dir]
+        result = subprocess.run(c, capture_output=True, text=True, check=True)
+        o = result.stdout + result.stderr
+        print(*c)
+        print(o)
+        return o
 
     def test_basic_substitution(self):
         # Replace spaces with underscores
@@ -90,9 +89,7 @@ class TestRegexSubstitution(unittest.TestCase):
 
     def test_case_insensitive_substitution(self):
         # Case-insensitive replacement of file extensions
-        output = self.run_renx(
-            "-s", r"/\.jpe?g$/.jpg/i", "--act"  # Normalize .jpeg/.JPG to .jpg
-        )
+        output = self.run_renx("-s", r"/\.jpe?g$/.jpg/i", "--act")  # Normalize .jpeg/.JPG to .jpg
 
         # Create a test file with mixed case extension
         Path(self.test_dir).joinpath("picture.JPEG").write_text("test")
@@ -105,9 +102,7 @@ class TestRegexSubstitution(unittest.TestCase):
             current_files,
             "Case-insensitive extension replacement should work",
         )
-        self.assertNotIn(
-            "picture.JPEG", current_files, "Original case variant should be replaced"
-        )
+        self.assertNotIn("picture.JPEG", current_files, "Original case variant should be replaced")
 
     def test_capture_groups(self):
         # Use capture groups to reorganize filename parts
@@ -130,9 +125,7 @@ class TestRegexSubstitution(unittest.TestCase):
 
         current_files = set(f.name for f in Path(self.test_dir).iterdir())
         # print(current_files)
-        self.assertSetEqual(
-            current_files, set(expected_files), "Capture groups should work correctly"
-        )
+        self.assertSetEqual(current_files, set(expected_files), "Capture groups should work correctly")
 
     def test_dry_run_output(self):
         # Verify dry-run shows correct substitutions without executing
@@ -176,6 +169,57 @@ class TestRegexSubstitution(unittest.TestCase):
             set(expected_files),
             "Multiple substitution patterns should work",
         )
+
+    def test_Simple_Transformation_ext(self):
+        self.run_renx("-s", "ext:upper", "--act")  # Using # as delimiter
+
+        expected_files = [
+            "file1.TXT",
+            "document-2023.PDF",
+            "image001.JPG",
+            "data_file.JSON",
+            "my script.PY",
+            "backup~temp.TMP",
+            "photo (1).PNG",
+        ]
+
+        current_files = set(f.name for f in Path(self.test_dir).iterdir())
+        self.assertEqual(
+            current_files,
+            set(expected_files),
+            "Multiple substitution patterns should work",
+        )
+
+    def test_000(self):
+        # Test multiple -s flagms with different delimiters
+        output = self.run_renx("-s", "@backup@@stem:upper", "--act")
+
+        expected_files = [
+            "file1.txt",
+            "document-2023.pdf",
+            "image001.jpg",
+            "data_file.json",
+            "my script.py",
+            "BACKUP~temp.tmp",
+            "photo (1).png",
+        ]
+
+        current_files = set(f.name for f in Path(self.test_dir).iterdir())
+        self.assertEqual(
+            current_files,
+            set(expected_files),
+            "Multiple substitution patterns should work",
+        )
+
+        # self.test_files = [
+        #     "file1.txt",
+        #     "document-2023.pdf",
+        #     "image001.jpg",
+        #     "data_file.json",
+        #     "my script.py",
+        #     "backup~temp.tmp",
+        #     "photo (1).png",
+        # ]
 
 
 if __name__ == "__main__":

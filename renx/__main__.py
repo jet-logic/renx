@@ -13,21 +13,21 @@ def asciify(text: str):
     return "".join(c for c in unicodedata.normalize("NFD", text) if unicodedata.category(c) != "Mn")
 
 
-def slugify(value):
+def slugify(value: str):
     value = str(value)
     value = asciify(value)
     value = re.sub(r"[^a-zA-Z0-9_.+-]+", "_", value)
     return value
 
 
-def clean(value):
+def clean(value: str):
     value = str(value)
     value = re.sub(r"\-+", "-", value).strip("-")
     value = re.sub(r"_+", "_", value).strip("_")
     return value
 
 
-def urlsafe(name, parent=None):
+def urlsafe(name: str, parent=None):
     s = slugify(name)
     if s != name or re.search(r"[_-]\.", s) or re.search(r"[_-]+", s):
         assert slugify(s) == s
@@ -36,40 +36,67 @@ def urlsafe(name, parent=None):
     return name
 
 
+sepa_set = r"""!"#$%&'*+,-./:;<=>?@\^_`|~"""
+trans_map = {
+    "upper": lambda s: s.upper(),
+    "lower": lambda s: s.lower(),
+    "title": lambda s: s.title(),
+    "swapcase": lambda s: s.swapcase(),
+    "expandtabs": lambda s: s.expandtabs(),
+    "casefold": lambda s: s.casefold(),
+    "capitalize": lambda s: s.capitalize(),
+    "asciify": asciify,
+    "slugify": slugify,
+    "urlsafe": urlsafe,
+}
+
+
+def chain_trans(extra: dict[str, object], t):
+    f = extra.get("transform")
+    if f:
+        extra["transform"] = lambda s: t(f(s))
+    else:
+        extra["transform"] = t
+
+
 def split_subs(s: str):
-    a = s[1:].split(s[0], 3)
-    if len(a) > 1:
-        search = a[0]
-        replace = a[1]
-        extra = {}
+    extra: dict[str, object] = {}
+    if not s:
+        raise SyntaxError("Empty")
+    elif re.match(r"^[\w:]+$", s):
+        for x in s.split(":"):
+            if x in ["ext", "stem"]:
+                extra["which"] = x
+            elif x in trans_map.keys():
+                chain_trans(extra, trans_map[x])
+            else:
+                raise SyntaxError(f"Invalid flag {x!r}")
+        return ".+", "", extra
+    sep = s[0]
+    if sep not in sepa_set:
+        raise SyntaxError("Separator must be {!r}")
+    a = s.split(sep, 3)
+    if len(a) > 2:
+        search, replace, tail = a[1], a[2], a[3]
         if not search:
-            raise RuntimeError(f"Empty search pattern {s!r}")
-        if len(a) > 2:
+            raise SyntaxError(f"Empty search pattern {s!r}")
+        if tail:
             flags = None
-            for x in a[2:]:
-                if x in [
-                    "upper",
-                    "lower",
-                    "title",
-                    "swapcase",
-                    "expandtabs",
-                    "casefold",
-                    "capitalize",
-                    "asciify",
-                    "slugify",
-                    "urlsafe",
-                    "ext",
-                    "stem",
-                ]:
-                    if x not in ["ext", "stem"]:
-                        assert not replace
-                    extra[x] = True
+            for x in tail.split(":"):
+                if x in ["ext", "stem"]:
+                    extra["which"] = x
+                elif x in trans_map.keys():
+                    chain_trans(extra, trans_map[x])
                 else:
+                    try:
+                        re.compile(rf"(?{x})")
+                    except Exception as e:
+                        raise SyntaxError(f"Invalid flag {x!r}: {e}")
                     flags = x
             if flags:
                 search = f"(?{flags}){search}"
         return search, replace, extra
-    raise RuntimeError(f"Invalid pattern  {s!r}")
+    raise SyntaxError(f"Invalid pattern  {s!r}")
 
 
 class App(ScanTree):
@@ -108,40 +135,28 @@ class App(ScanTree):
         if self.urlsafe:
             _subs.append(urlsafe)
 
-        def _append(rex, rep, extra):
+        def _append(rex, rep: str, extra: dict[str:object]):
             if extra:
 
                 def fn(name: str, parent):
-                    if extra.get("stem"):
+                    x = extra.get("which", "")
+                    if x == "stem":
                         S, x = splitext(name)
-                        F = lambda r: r + x
-                    elif extra.get("ext"):
+                        fin = lambda r: r + x
+                    elif x == "ext":
                         x, S = splitext(name)
-                        F = lambda r: x + r
+                        fin = lambda r: x + r
                     else:
+                        assert x == ""
                         S = name
-                        F = lambda r: r
-                    if extra.get("lower"):
-                        R = lambda m: m.group(0).lower()
-                    elif extra.get("upper"):
-                        R = lambda m: m.group(0).upper()
-                    elif extra.get("title"):
-                        R = lambda m: m.group(0).title()
-                    elif extra.get("swapcase"):
-                        R = lambda m: m.group(0).swapcase()
-                    elif extra.get("casefold"):
-                        R = lambda m: m.group(0).casefold()
-                    elif extra.get("capitalize"):
-                        R = lambda m: m.group(0).capitalize()
-                    elif extra.get("asciify"):
-                        R = lambda m: asciify(m.group(0))
-                    elif extra.get("urlsafe"):
-                        R = lambda m: urlsafe(m.group(0))
-                    elif extra.get("slugify"):
-                        R = lambda m: urlsafe(m.group(0))
+                        fin = lambda r: r
+                    f = extra.get("transform")
+                    if f:
+                        R = lambda m: f(m.group(0))
                     else:
                         R = rep
-                    return F(rex.sub(R, S))
+
+                    return fin(rex.sub(R, S))
 
             else:
 
