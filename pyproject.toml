@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "renx"
-version = "0.0.5"
+version = "0.0.6"
 description = "Advanced file renaming tool with regex and case transformation support"
 readme = "README.md"
 authors = [
@@ -36,7 +36,7 @@ BugTracker = "https://github.com/jet-logic/renx/issues"
 Changelog = "https://github.com/jet-logic/renx/releases"
 
 [project.scripts]
-renx = "renx.__main__:App.main"
+renx = "renx.__main__:main"
 
 [project.optional-dependencies]
 test = [

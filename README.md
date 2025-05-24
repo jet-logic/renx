@@ -191,7 +191,7 @@ Search-Replace Operations
 
 3. **Limit recursion depth**:
    ```bash
-   python -m renx --max-depth 2 /path/to/files
+   python -m renx --depth ..2 /path/to/files
    ```
 
 ## Multiple substitution

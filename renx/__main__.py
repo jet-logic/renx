@@ -101,14 +101,19 @@ def split_subs(s: str):
 
 class App(ScanTree):
     def __init__(self) -> None:
-        self._entry_filters = []
         super().__init__()
+        self.dry_run = True
+        self.depth_first = True
+        self._glob_excludes = []
+        self._glob_includes = []
+        # self._re_excludes = []
+        # self._re_includes = []
+        self._dir_depth = ()
+        self._file_sizes = []
+        self._paths_from = []
 
     def add_arguments(self, argp):
-        self.dry_run = True
-        self.bottom_up = True
-        self.excludes = []
-        self.includes = []
+
         argp.add_argument("--subs", "-s", action="append", default=[], help="subs regex")
         argp.add_argument("--lower", action="store_true", help="to lower case")
         argp.add_argument("--upper", action="store_true", help="to upper case")
@@ -177,7 +182,7 @@ class App(ScanTree):
             _append(rex, replace, extra)
 
         self._subs = _subs
-        super().start()
+        self._walk_paths()
 
     def process_entry(self, de):
 
@@ -201,4 +206,10 @@ class App(ScanTree):
                 print(f'REN: {name1!r} -> {name2!r} {dry_run and "?" or "!"} @{parent}')
 
 
-(__name__ == "__main__") and App().main()
+def main():
+    """CLI entry point."""
+    App().main()
+
+
+if __name__ == "__main__":
+    main()
