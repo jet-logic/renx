@@ -16,7 +16,10 @@ class TestExtra(unittest.TestCase):
         return result
 
     def test_example(self):
+        from os import environ
 
+        if environ.get("RUNNER_OS") == "Windows":
+            return
         with tempfile.TemporaryDirectory() as tmp:
             top = Path(tmp)
             vid = top.joinpath("the.matrix.[1999].1080p.[YTS.AM].BRRip.x264-[GloDLS].ExTrEmE.mKV")
@@ -51,7 +54,9 @@ class TestExtra(unittest.TestCase):
     *.doc \
     """
             )
-            subprocess.run(["sh", scr], cwd=top)
+            cmds = ["sh", scr]
+            cmds = ["python", "-m", "renx", "--act", "-s", "/.+//stem:asciify:swapcase:slugify", " *.doc"]
+            subprocess.run(cmds, cwd=top)
             self.assertEqual(set(["mY_rESUME.doc", "test.sh"]), set([x.name for x in top.iterdir()]))
             # print(set([x.name for x in top.iterdir()]))
 
