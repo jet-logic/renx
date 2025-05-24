@@ -55,8 +55,8 @@ class TestExtra(unittest.TestCase):
     """
             )
             cmds = ["sh", scr]
-            cmds = ["python", "-m", "renx", "--act", "-s", "/.+//stem:asciify:swapcase:slugify", " *.doc"]
-            subprocess.run(cmds, cwd=top)
+            cmds = ["python", "-m", "renx", "--act", "-s", "/.+//stem:asciify:swapcase:slugify", "--include", "*.doc", tmp]
+            self.exec(cmds, cwd=top)
             self.assertEqual(set(["mY_rESUME.doc", "test.sh"]), set([x.name for x in top.iterdir()]))
             # print(set([x.name for x in top.iterdir()]))
 
