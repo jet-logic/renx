@@ -51,7 +51,7 @@ trans_map = {
 }
 
 
-def chain_trans(extra: dict[str, object], t):
+def chain_trans(extra: "dict[str, object]", t):
     f = extra.get("transform")
     if f:
         extra["transform"] = lambda s: t(f(s))
@@ -60,7 +60,7 @@ def chain_trans(extra: dict[str, object], t):
 
 
 def split_subs(s: str):
-    extra: dict[str, object] = {}
+    extra: "dict[str, object]" = {}
     if not s:
         raise SyntaxError("Empty")
     elif re.match(r"^[\w:]+$", s):
@@ -138,7 +138,7 @@ class App(FindSkel):
         if self.urlsafe:
             _subs.append(urlsafe)
 
-        def _append(rex, rep: str, extra: dict[str:object]):
+        def _append(rex, rep: str, extra: "dict[str:object]"):
             if extra:
 
                 def fn(name: str, parent):

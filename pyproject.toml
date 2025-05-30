@@ -10,7 +10,7 @@ readme = "README.md"
 authors = [
     {name = "Jet-Logic"},
 ]
-license-files = ["LICEN[CS]E*"]
+license = {file = "LICENSE"} 
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -50,11 +50,6 @@ dev = [
     "mypy>=0.900",
     "isort>=5.0",
 ]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-python_files = "test_*.py"
-addopts = "--cov=renx --cov-report=term-missing"
 
 [tool.black]
 line-length = 127

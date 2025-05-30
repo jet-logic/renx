@@ -6,7 +6,7 @@ import subprocess
 
 
 class TestExtra(unittest.TestCase):
-    def exec(self, cmd: list[str], capture_output=True, text=True, **kwargs):
+    def exec(self, cmd: "list[str]", capture_output=True, text=True, **kwargs):
         print(f"[COMMAND] {' '.join(cmd)}")
         result = subprocess.run(cmd, capture_output=True, text=True, **kwargs)
         if capture_output:
@@ -27,9 +27,9 @@ class TestExtra(unittest.TestCase):
             scr = top.joinpath("test.sh")
             scr.write_text(
                 r"""python -m renx --act \
-    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE|EZTVx.to|MeGusta))##ix' \
+    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE|EZTVx.to|MeGusta|Lama))##ix' \
     -s '!(2160p|1080p|720p|x264|x265|HEVC|AAC|AC3)!!i' \
-    -s '!(HDRip|BluRay|WEB-DL|DVDrip|BRrip|HDRip|DTS)!!i' \
+    -s '!(HDRip|BluRay|WEB-DL|DVDrip|BRrip|WEBRip|HDRip|DTS)!!i' \
     -s '!\[(|\w+)\]!\1!' \
     -s '/[\._-]+/./' \
     -s '/\.+/ /stem' \
