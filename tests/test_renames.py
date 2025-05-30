@@ -28,11 +28,13 @@ class TestCaseTransformationsAndInvalidRegex(unittest.TestCase):
 
     def run_renx(self, *args):
         """Helper to run renx as subprocess"""
-        result = subprocess.run(
-            ["python", "-m", "renx"] + list(args) + [self.test_dir],
-            capture_output=True,
-            text=True,
-        )
+        cmd = ["python", "-m", "renx"] + list(args) + [self.test_dir]
+        print(f"[COMMAND] {' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if 1:
+            print(f"[STDOUT]\n{result.stdout}")
+            if result.stderr:
+                print(f"[STDERR]\n{result.stderr}")
         return result
 
     def test_upper_case_transformation(self):
@@ -49,9 +51,7 @@ class TestCaseTransformationsAndInvalidRegex(unittest.TestCase):
         ]
 
         current_files = set(f.name for f in Path(self.test_dir).iterdir())
-        self.assertEqual(
-            current_files, set(expected_files), "All filenames should be uppercase"
-        )
+        self.assertEqual(current_files, set(expected_files), "All filenames should be uppercase")
 
         # Verify return code is success
         self.assertEqual(result.returncode, 0, "Should exit successfully")
@@ -70,26 +70,18 @@ class TestCaseTransformationsAndInvalidRegex(unittest.TestCase):
         ]
 
         current_files = set(f.name for f in Path(self.test_dir).iterdir())
-        self.assertEqual(
-            current_files, set(expected_files), "All filenames should be lowercase"
-        )
+        self.assertEqual(current_files, set(expected_files), "All filenames should be lowercase")
 
         # Verify extensions are also lowercased
-        self.assertIn(
-            "uppercase.jpg", current_files, "Extensions should be lowercased too"
-        )
+        self.assertIn("uppercase.jpg", current_files, "Extensions should be lowercased too")
 
     def test_conflicting_case_flags(self):
         # Test both --upper and --lower (should error)
         result = self.run_renx("--upper", "--lower")
 
         # Verify error message and non-zero exit code
-        self.assertNotEqual(
-            result.returncode, 0, "Conflicting flags should cause error"
-        )
-        self.assertIn(
-            "error", result.stderr.lower(), "Should show error about conflicting flags"
-        )
+        self.assertNotEqual(result.returncode, 0, "Conflicting flags should cause error")
+        self.assertIn("error", result.stderr.lower(), "Should show error about conflicting flags")
 
     def test_invalid_regex_syntax(self):
         # Test malformed regex pattern
@@ -105,9 +97,7 @@ class TestCaseTransformationsAndInvalidRegex(unittest.TestCase):
         for pattern in invalid_patterns:
             with self.subTest(pattern=pattern):
                 result = self.run_renx("-s", pattern)
-                self.assertNotEqual(
-                    result.returncode, 0, f"Invalid pattern '{pattern}' should fail"
-                )
+                self.assertNotEqual(result.returncode, 0, f"Invalid pattern '{pattern}' should fail")
                 self.assertIn(
                     "error",
                     result.stderr.lower(),

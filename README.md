@@ -11,7 +11,7 @@ If you find this project helpful, consider supporting me:
 
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/B0B01E8SY7)
 
-## Features ✨
+## ✨ Features
 
 - **Pattern-based renaming** 🧩 - Use regex substitutions to transform filenames
 - **Case conversion**: lower, upper, title, swapcase, capitalize
@@ -60,90 +60,95 @@ python -m renx [OPTIONS] [PATHS...]
    python -m renx --urlsafe /path/to/files
    ```
 
-## Regex Substitutions Format
+## 🔁 Substitution Pattern Format
 
-The substitution pattern uses this format:
-
-```
-❗search❗replace❗[flags]❗[flags]❗[flags]
-```
-
-Where:
-
-1. The first character (❗) after `-s` or `--subs` acts as the delimiter
-2. The pattern is split into parts by this delimiter
-
-## Examples
-
-### Simple substitution
+### 1. Simple Transformation Syntax
 
 ```
--s '/old/new/'
+transform_name[:additional_flags]
 ```
 
-- Replaces first occurrence of "old" with "new" in each filename
+- Applies a transformation to the entire input
+- No search-replace pattern matching
+- Example: `"upper"` or `"lower:ext"`
 
-### 3. Using different delimiters
-
-```
--s '|old|new|'
-```
-
-- Uses `|` as delimiter instead of `/`
-
-### 4. Case-insensitive substitution
+### 2. Search-Replace Syntax
 
 ```
--s ':old:new:i'
+❗search❗replacement❗[flags]
 ```
 
-- Replaces "old", "Old", "OLD", etc. with "new"
+- Performs pattern-based substitution
+- Example: `"/old/new/"` or `"@pattern@replacement@i"`
+- The first character (❗) after `-s` or `--subs` acts as the delimiter
 
-### 5. Complex patterns
+### Components
+
+#### Separators
+
+❗ Must be one of these special characters:
 
 ```
--s '/\d+/_/'
+!"#$%&'*+,-./:;<=>?@\^_`|~
 ```
 
-- Replaces one or more digits with an underscore
+First character of string defines the separator for the entire pattern.
 
-## Supported Flags
+#### Transformation Names
 
-The tool supports these regex flags (see Python's `re` module for complete reference):
+Available transformations (can be used in both syntax forms):
 
-| Flag | Meaning                        |
-| ---- | ------------------------------ |
-| `i`  | Case-insensitive matching      |
-| `m`  | Multi-line matching            |
-| `s`  | Dot matches all (including \n) |
-| `x`  | Verbose (ignore whitespace)    |
+| Name       | Description                           |
+| ---------- | ------------------------------------- |
+| upper      | Convert to uppercase                  |
+| lower      | Convert to lowercase                  |
+| title      | Title case                            |
+| swapcase   | Swap case of all letters              |
+| expandtabs | Replace tabs with spaces              |
+| casefold   | Aggressive lowercase for matching     |
+| capitalize | Capitalize first letter               |
+| asciify    | Convert to ASCII (custom function)    |
+| slugify    | Convert to URL slug (custom function) |
+| urlsafe    | Make URL-safe (custom function)       |
 
-For example, with `-s '/foo/bar/i'`:
+#### Special Flags
 
-1. Delimiter = `/`
-2. Regex = `foo`
-3. Replacement = `bar`
-4. Flags = `i` (case-insensitive)
+Can be appended after colons (`:`):
 
-Special flags:
+| Flag | Description                   |
+| ---- | ----------------------------- |
+| ext  | Only apply to file extensions |
+| stem | Only apply to filename stems  |
 
-- `upper`, `lower`, `title`, `swapcase`, `capitalize` - Case transformations
-- `ext` - Apply to extension only
-- `stem` - Apply to filename stem only
+#### Regex Flags
 
-Examples:
+Standard Python regex flags can be included:
 
-- `-s '/foo/bar/'` - Replace 'foo' with 'bar'
-- `-s '/\.jpg$/.png/'` - Change .jpg extensions to .png
-- `-s '/^/prefix_/'` - Add prefix to all names
-- `-s '/_/-/g'` - Replace all underscores with hyphens
-- `-s '/.*//upper/'` - Convert entire name to uppercase
-- `-s '/\..*$//lower/ext'` - Convert extension to lowercase
+- `i` - Case insensitive
+- `m` - Multiline mode
+- `s` - Dot matches all
+- etc. (any valid regex flag)
 
-## Important Notes
+#### Examples
 
-- The delimiter can be any character (but must not appear unescaped in the pattern)
-- The tool compiles the regex with the specified flags before applying it
+Simple Transformations
+
+- `"upper"` - Convert entire string to uppercase
+- `"lower:ext"` - Convert file extension to lowercase
+- `"slugify:stem"` - Convert filename stem to URL slug
+
+Search-Replace Operations
+
+- `"/old/new/"` - Basic replacement
+- `"@[0-9]+@NUM@i"` - Replace all numbers with "NUM" (case insensitive)
+- `"#cat#dog#ext"` - Replace "cat" with "dog" only in file extensions
+- `"!([A-Z])!\1_!stem:lower"` - Add underscore after capitals in stems and lowercase all
+
+### Usage Notes
+
+- When using the search-replace syntax, the first character must be from the separator set
+- Multiple flags can be combined with colons (`:`)
+- The "ext" and "stem" flags are mutually exclusive
 
 ## Practical Examples
 
@@ -186,7 +191,7 @@ Examples:
 
 3. **Limit recursion depth**:
    ```bash
-   python -m renx --max-depth 2 /path/to/files
+   python -m renx --depth ..2 /path/to/files
    ```
 
 ## Multiple substitution
@@ -195,13 +200,15 @@ When your downloaded files look like they were named by a cat walking on a keybo
 
 ```bash
 python -m renx \
-    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE))##ix' \
-    -s '!(1080p|720p|HDRip|x264|x265|BRRip|WEB-DL|BDRip|AAC|DTS)!!i' \
+    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE|EZTVx.to|MeGusta))##ix' \
+    -s '!(2160p|1080p|720p|x264|x265|HEVC|AAC|AC3)!!i' \
+    -s '!(HDRip|BluRay|WEB-DL|DVDrip|BRrip|HDRip|DTS)!!i' \
     -s '!\[(|\w+)\]!\1!' \
     -s '/[\._-]+/./' \
     -s '/\.+/ /stem' \
-    -s /.+//ext/lower \
-    -s '/.+//stem/title' \
+    -s /.+//ext:lower \
+    -s '/.+//stem:title' \
+    --include "*.m*" \
     .
 # Before: "the.matrix.[1999].1080p.[YTS.AM].BRRip.x264-[GloDLS].ExTrEmE.mKV"
 # After: "The Matrix 1999.mkv" 🎬✨
