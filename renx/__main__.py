@@ -3,6 +3,7 @@ from os import rename
 from os.path import dirname, join
 from os.path import splitext
 from .findskel import FindSkel
+from . import __version__
 
 
 def asciify(text: str):
@@ -116,6 +117,7 @@ class App(FindSkel):
         argp.add_argument("--lower", action="store_true", help="to lower case")
         argp.add_argument("--upper", action="store_true", help="to upper case")
         argp.add_argument("--urlsafe", action="store_true", help="only urlsafe characters")
+        argp.add_argument("--version", action="version", version=f"{__version__}")
         if not argp.description:
             argp.description = "Renames files matching re substitution pattern"
 

@@ -1,7 +1,8 @@
 # renx - Advanced File Renaming Tool
 
-[![Python Version](https://img.shields.io/badge/python-3.7+-blue.svg)](https://www.python.org/downloads/)
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI version fury.io](https://badge.fury.io/py/renx.svg)](https://pypi.python.org/pypi/renx/)
+[![Tests Status](https://github.com/jet-logic/renx/actions/workflows/build.yml/badge.svg)](https://github.com/jet-logic/renx/actions)
 
 `renx` is a powerful command-line utility for batch renaming files and directories with advanced pattern matching and transformation capabilities.
 
@@ -199,10 +200,10 @@ Search-Replace Operations
 When your downloaded files look like they were named by a cat walking on a keyboard 😉:
 
 ```bash
-python -m renx \
-    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE|EZTVx.to|MeGusta))##ix' \
+python -m renx --act \
+    -s '#(?:(YTS(?:.?\w+)|YIFY|GloDLS|RARBG|ExTrEmE|EZTVx.to|MeGusta|Lama))##ix' \
     -s '!(2160p|1080p|720p|x264|x265|HEVC|AAC|AC3)!!i' \
-    -s '!(HDRip|BluRay|WEB-DL|DVDrip|BRrip|HDRip|DTS)!!i' \
+    -s '!(HDRip|BluRay|WEB-DL|DVDrip|BRrip|WEBRip|HDRip|DTS)!!i' \
     -s '!\[(|\w+)\]!\1!' \
     -s '/[\._-]+/./' \
     -s '/\.+/ /stem' \
