@@ -2,7 +2,7 @@ import unicodedata, re
 from os import rename
 from os.path import dirname, join
 from os.path import splitext
-from .scantree import ScanTree
+from .findskel import FindSkel
 
 
 def asciify(text: str):
@@ -99,15 +99,13 @@ def split_subs(s: str):
     raise SyntaxError(f"Invalid pattern  {s!r}")
 
 
-class App(ScanTree):
+class App(FindSkel):
     def __init__(self) -> None:
         super().__init__()
         self.dry_run = True
         self.depth_first = True
         self._glob_excludes = []
         self._glob_includes = []
-        # self._re_excludes = []
-        # self._re_includes = []
         self._dir_depth = ()
         self._file_sizes = []
         self._paths_from = []
