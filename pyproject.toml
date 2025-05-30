@@ -2,9 +2,12 @@
 requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
+[tool.setuptools.dynamic]
+version = {attr = "renx.__init__.__version__"}
+
 [project]
 name = "renx"
-version = "0.0.6"
+dynamic = ["version"]
 description = "Advanced file renaming tool with regex and case transformation support"
 readme = "README.md"
 authors = [
@@ -16,17 +19,12 @@ classifiers = [
     "Intended Audience :: Developers",
     "Intended Audience :: System Administrators",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11",
     "Operating System :: OS Independent",
     "Environment :: Console",
     "Topic :: Utilities",
 ]
 keywords = ["rename", "files", "regex", "cli", "batch"]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = []
 
 [project.urls]
@@ -53,7 +51,7 @@ dev = [
 
 [tool.black]
 line-length = 127
-target-version = ['py37']
+target-version = ['py38']
 include = '\.pyi?$'
 exclude = '''
 /(
